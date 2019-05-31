@@ -1,0 +1,28 @@
+import os
+import datetime
+import glob
+
+in_wd = "H:/Rhizoc_2019/Scanner_1_Rhizoc_2_21_2019"
+#in_wd = "C:/Users/isaac_madsen/Desktop/New folder/images"
+scanner_number = "1"
+dirs = os.listdir(in_wd)
+
+
+print(dirs)
+
+for item in dirs:
+    if item.endswith(".tif"):
+        in_file = in_wd + "/" + item
+        modified_time = os.path.getmtime(in_file)
+        modified_date = datetime.datetime.fromtimestamp(modified_time)
+        os.rename(in_file, os.path.join(in_wd, 
+                                    "rhizoc_T" + 
+                                    scanner_number +
+                                    "_None_" +
+                                    modified_date.strftime("%d%m%Y_%H%M_") +
+                                    modified_date.strftime("%H%M_")+
+                                    "Madsen"
+                                    ".tif"))
+
+list_wd = os.listdir(in_wd)
+print(list_wd)
