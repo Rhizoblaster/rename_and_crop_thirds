@@ -1,0 +1,98 @@
+
+import os
+import sys
+from PIL import Image
+
+#in_path = "C:/Users/isaac_madsen/Desktop/dump/in"
+#out_path = "C:/Users/isaac_madsen/Desktop/dump/out"
+
+#in_path = ("H:/Rhizoc_2019/Scanner_3_Rhizoch_2_21_2019")
+#out_path = ("D:/Scanner_3_Rhizoch_2_21_2019")
+
+
+
+## x is the ratio to which the image should be downsized
+x = 0.25
+
+Image.MAX_IMAGE_PIXELS = 7000000000
+
+
+#print(dirs)
+
+scanners = ["1", "2", "3", "4", "5", "6", "7", "8"]
+
+date = "11_5_2018"
+
+for i in scanners:
+    in_path = ("H:/Rhizoc_2019/Scanner_" + i + "_Rhizoc_" + date)
+    
+    out_path = ("D:/Scanner_" + i + "_Rhizoc_" + date)
+    
+    os.makedirs(out_path)
+    
+    os.makedirs(out_path + "/Left")
+    os.makedirs(out_path + "/Middle")
+    os.makedirs(out_path + "/Right")
+
+    
+    dirs = os.listdir(in_path)
+
+    for item in dirs:
+        if item.endswith(".tif"):
+            try:
+                im = Image.open(in_path + "/" + item)
+
+                old_width, old_height = im.size
+                print(old_width, old_height)
+
+                ## the raw images are too large for smooth processing. Therefore they are downsized here. 
+                re_width = int(old_width * x)
+                re_height = int(old_height * x)
+                print(re_width, re_height)
+                imResize = im.resize((re_width, re_height), Image.ANTIALIAS) 
+
+                ## any images which are in portrait aspect ratio are rotated to landscape
+                if re_height > re_width:
+                    imRotate = imResize.transpose(Image.ROTATE_270)
+                else:
+                    imRotate = imResize
+
+
+                ## here is where we get the new size to crop the image. 
+                new_width, new_height = imRotate.size
+
+                print(new_width, new_height)
+
+                LC_Top = new_height*0
+                LC_Bottom = new_height*1
+                LC_Left = new_width*0
+                LC_Right = new_width*0.24
+
+                MC_Top = new_height*0
+                MC_Bottom = new_height*1
+                MC_Left = new_width*0.3
+                MC_Right = new_width*0.55
+
+                RC_Top = new_height*0
+                RC_Bottom = new_height*1
+                RC_Left = new_width*0.66
+                RC_Right = new_width*0.91
+
+                cropped_im = imRotate.crop((LC_Left, LC_Top, LC_Right, LC_Bottom))
+                new_name = item.replace("None","Left")
+                cropped_im.save(out_path + "/left/" + new_name, 'TIFF', quality = 90)
+
+
+                cropped_im = imRotate.crop((MC_Left, MC_Top, MC_Right, MC_Bottom))
+                new_name = item.replace("None","Middle")
+                cropped_im.save(out_path + "/middle/" + new_name, 'TIFF', quality = 90)
+
+                cropped_im = imRotate.crop((RC_Left, RC_Top, RC_Right, RC_Bottom))
+                new_name = item.replace("None","Right")
+                cropped_im.save(out_path + "/right/" + new_name, 'TIFF', quality = 90)
+
+            except IOError:
+                print("Ouch!")
+            
+
+print("All Done!")
